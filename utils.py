@@ -7,9 +7,10 @@
 """
 from glob import glob
 import os
+import pandas as pd
 import shutil
 import wfdb
-#from tqdm import tqdm
+# from tqdm import tqdm
 import numpy as np
 import conf
 import scipy.io as sio
@@ -31,7 +32,7 @@ def mk_folders(path, folder_names):
 
 
 def get_file_name():
-    path = os.path.join(conf.data_path,'TRAIN')
+    path = os.path.join(conf.data_path, 'TRAIN')
     file_names = glob(path + '/*.' + conf.data_suffix)
     file_names.sort()
     return file_names
@@ -44,22 +45,28 @@ def load_data():
         signal = sio.loadmat(file)['data']
         signals.append(signal)
     signals = np.array(signals)
-    print('signals.shape:',signals.shape)
+    print('signals.shape:', signals.shape)
     return signals
 
 
-def split_data(all_x,all_y,train_ratio):
+def load_label():
+    labels = pd.read_csv(conf.label_path, header=None, sep='\t')
+    labels = labels[1]
+    return labels
+
+
+def split_data(all_x, all_y, train_ratio):
     np.random.seed(2019)
-    train = np.random.choice([True, False], len(all_y), replace=True, p=[train_ratio, 1-train_ratio])
+    train = np.random.choice([True, False], len(all_y), replace=True, p=[train_ratio, 1 - train_ratio])
     x_train = all_x[train]
     x_test = all_x[~train]
     y_train = all_y[train]
     y_test = all_y[~train]
-    return x_train,y_train,x_test,y_test
+    return x_train, y_train, x_test, y_test
 
 
-def generator(x,y,batch_size):
+def generator(x, y, batch_size):
     while True:
         np.random.seed(2019)
-        index = np.random.randint(0,len(y),batch_size)
-        yield x[index].reshape([batch_size,-1,1]),y[index]
+        index = np.random.randint(0, len(y), batch_size)
+        yield x[index].reshape([batch_size, -1, 1]), y[index]

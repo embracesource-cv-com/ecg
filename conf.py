@@ -12,6 +12,8 @@ label_path = '/home/dataset/medical/preliminary/reference.txt'
 output_dir = '/home/model_output/medical/ecg/preliminary'
 data_suffix = 'mat'
 
+num_class = 2
+train_ratio = 0.5
 
 wavelet_func = 'db6'
 wavelet_level = 5
@@ -19,7 +21,7 @@ sample_rate = 500
 feature_type = ['wavelet','heart_rate']  #'wavelet','heart_rate','distance','amplitude'
 
 '''
-num_class = 4
+
 batch_size = 4
 dropout_rate = 0.2
 lr = 0.001

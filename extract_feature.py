@@ -45,6 +45,7 @@ def cal_heart_rate(signals):
     pool = mp.Pool(processes=mp.cpu_count())
     results = [pool.apply_async(signal_heart_rate, args=(signals[x],)) for x in range(len(signals))]
     heart_rate_feature = np.array([result.get() for result in results])
+    heart_rate_feature = np.expand_dims(heart_rate_feature, axis=1)
     return heart_rate_feature
 
 
@@ -112,12 +113,16 @@ def cal_wavelet_feature(signals, func=conf.wavelet_func, level=conf.wavelet_leve
     return wavelet_feature
 
 
-def get_all_feature():
+def get_all_feature(signals):
     feature_types = []
+    if 'wavelet' in conf.feature_type:
+        print('小波特征计算中...')
+        wavelet_feature = cal_wavelet_feature(signals)
+        feature_types.append(wavelet_feature)
 
     if 'heart_rate' in conf.feature_type:
         print('心率特征计算中...')
-        heart_rate_feature = cal_heart_rate()
+        heart_rate_feature = cal_heart_rate(signals)
         feature_types.append(heart_rate_feature)
 
     if 'distance' in conf.feature_type or 'amplitude' in conf.feature_type:
@@ -131,11 +136,6 @@ def get_all_feature():
             amp_feature = cal_amp_feature(p_peak, q_peak, r_peak, s_peak, t_peak, q_begin, p_begin, t_begin, p_end,
                                           s_end, t_end)
             feature_types.append(amp_feature)
-
-    if 'wavelet' in conf.feature_type:
-        print('小波特征计算中...')
-        wavelet_feature = cal_wavelet_feature()
-        feature_types.append(wavelet_feature)
 
     all_feature = np.concatenate(feature_types, axis=1)
     print('all_feature shape:', all_feature.shape)
