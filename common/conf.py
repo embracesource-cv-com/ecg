@@ -5,9 +5,6 @@
 @file: conf.py
 @description:
 """
-import os
-import shutil
-
 data_path = '/home/dataset/medical/preliminary'
 label_path = '/home/dataset/medical/preliminary/reference.txt'
 output_dir = '/home/model_output/medical/ecg/preliminary'
@@ -15,22 +12,24 @@ output_dir = '/home/model_output/medical/ecg/preliminary'
 data_suffix = 'mat'
 num_class = 2
 train_ratio = 0.5
+seed = 2019
 
 wavelet_func = 'db6'
 wavelet_level = 5
 sample_rate = 500
 feature_type = ['wavelet','heart_rate']  #'wavelet','heart_rate','distance','amplitude'
 
-'''
-batch_size = 4
-dropout_rate = 0.2
+conv_kernel_size = 32
+seq_len = 5000
+num_lead = 12
+batch_size = 60
+dropout_rate = 0.5
 lr = 0.001
-steps_per_epoch =10
-epochs = 1
+steps_per_epoch =(train_ratio*600)//batch_size
+epochs = 50
 one_hot = False
-train_ratio = 0.7
-seed = 2019
 
+gpu_index = "1"
 ensemble = True
 ensemble_mode = 'prob_sum'  # label_vote or prob_sum or prob_max
 num_model = 5
@@ -41,7 +40,7 @@ use_tradition_feature = False
 feature_type = ['wavelet']
 func_path = 'C:\\Users\\lidan\\OneDrive\\A_markdown\\public\\healthcare\\201902_心电图\\code\\201903_traditional_ecg'
 #func_path = '/home/github/py_data_mining/medical/tradition_ecg'
-'''
+
 '''
 for name in dir():
     if not name.startswith('__'):

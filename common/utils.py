@@ -12,6 +12,8 @@ import shutil
 import common.conf as conf
 import scipy.io as sio
 import numpy as np
+import math
+from sklearn.utils import shuffle
 
 
 def re_create_path(path):
@@ -51,6 +53,8 @@ def split_data(all_x, all_y, train_ratio):
     x_test = all_x[~train]
     y_train = all_y[train]
     y_test = all_y[~train]
+    x_train, y_train= shuffle(x_train, y_train, random_state=conf.seed)
+    x_test, y_test = shuffle(x_test, y_test, random_state=conf.seed)
     return x_train, y_train, x_test, y_test
 
 
@@ -58,4 +62,12 @@ def generator(x, y, batch_size):
     while True:
         np.random.seed(2019)
         index = np.random.randint(0, len(y), batch_size)
-        yield x[index].reshape([batch_size, -1, 1]), y[index]
+        yield x[index].reshape([batch_size, -1,  conf.num_lead]), y[index]
+
+
+def gen_no_random(x, y, batch_size):
+    steps = math.ceil(len(x) / batch_size)
+    while True:
+        for i in range(steps):
+            index = range(i * batch_size,i * batch_size + batch_size)
+            yield x[index].reshape([batch_size, -1,  conf.num_lead]), y[index]
