@@ -7,8 +7,9 @@
 """
 import pandas as pd
 from sklearn import metrics
-from sklearn.metrics import classification_report
-
+from sklearn.metrics import classification_report,f1_score
+from common import conf
+import numpy as np
 
 def save_result(model, name, y_train, y_train_pred, y_vali, y_vali_pred):
     '''
@@ -43,5 +44,16 @@ def evaluate(model,x_train,y_train,x_test,y_test,result_file):
     y_train_pred = model.predict(x_train)
     y_test_pred = model.predict(x_test)
     save_result(model, result_file, y_train, y_train_pred,y_test, y_test_pred)
+
+
+
+def cal_f1_metric(model,x,y_true):
+    y_prob = model.predict(x, verbose=0)
+    y_pred = np.argmax(y_prob, axis=1)
+    if conf.one_hot:
+        y_true = np.argmax(y_true, axis=1)
+    f1 = f1_score(y_true, y_pred)
+    f1 = np.round(f1,3)
+    return f1
 
 

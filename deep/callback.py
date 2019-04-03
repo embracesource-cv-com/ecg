@@ -9,7 +9,7 @@ import common.conf as conf
 import keras
 from keras.callbacks import TensorBoard, ReduceLROnPlateau, ModelCheckpoint
 import numpy as np
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score,f1_score
 import warnings
 import os
 
@@ -19,11 +19,11 @@ lr_decay = ReduceLROnPlateau(monitor='val_acc', patience=5, factor=0.95)
 
 # ckpt_saver = ModelCheckpoint(filepath=conf.output_dir + 'weights.hdf5', verbose=1, save_best_only=True)
 
-
 def ckpt_saver(model_index):
-    return ModelCheckpoint(filepath=os.path.join(conf.output_dir, str(model_index) + '_weights.hdf5'),
+    return ModelCheckpoint(filepath=os.path.join(conf.output_dir, str(model_index) +'_weights.hdf5'),
                            verbose=1, monitor='val_acc',
                            save_best_only=True)
+
 
 def evaluate(model, x, y_true):
     y_prob = model.predict(x, verbose=0)
@@ -33,6 +33,7 @@ def evaluate(model, x, y_true):
     acc = accuracy_score(y_true, y_pred)
     conf_matrix = confusion_matrix(y_true, y_pred)
     acc_report = classification_report(y_true, y_pred)
+    f1 = f1_score(y_true, y_pred)
     return acc, conf_matrix, acc_report, y_prob, y_pred
 
 

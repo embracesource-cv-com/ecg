@@ -14,6 +14,7 @@ from keras.optimizers import Adam
 from deep.callback import log, lr_decay, ckpt_saver, Eval
 from sklearn.model_selection import StratifiedShuffleSplit
 from tradition.extract_feature import get_all_feature
+from common import model_utils
 import os
 import numpy as np
 
@@ -62,10 +63,13 @@ def fit_model(x_train, y_train, x_test, y_test, model, model_index):
                         validation_steps=2,
                         steps_per_epoch=conf.steps_per_epoch,
                         epochs=conf.epochs,
-                        callbacks=[log, lr_decay, ckpt_saver(model_index)])
+                        callbacks=[log, lr_decay, ckpt_saver(model_index),val_accuracy])
+    scores = model_utils.cal_f1_metric(model,x_test,y_test)
+    return scores
 
 
 def train():
+    scores = []
     x, y = load_data()
     if not conf.ensemble:
         x_train, y_train, x_test, y_test = utils.split_data(x, y, train_ratio=conf.train_ratio)
@@ -81,8 +85,12 @@ def train():
             y_train, y_test = y[train_index], y[test_index]
             print('len(x_train), len(x_test):', len(x_train), len(x_test))
             model = complie_model()
-            fit_model(x_train, y_train, x_test, y_test, model, i)
+            score = fit_model(x_train, y_train, x_test, y_test, model, i)
+            scores.append(score)
             i = i + 1
+        scores = np.array(scores)
+        print('F1 score of all model: ',scores)
+        print('F1 score mean+/-std: ',"%0.3f (+/- %0.3f)" % (np.mean(scores), np.std(scores)))
 
 
 def train_extra_feature():

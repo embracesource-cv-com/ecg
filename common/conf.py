@@ -26,7 +26,7 @@ batch_size = 60
 dropout_rate = 0.5
 lr = 0.001
 steps_per_epoch =(train_ratio*600)//batch_size
-epochs = 50
+epochs = 60
 one_hot = False
 
 gpu_index = "1"
