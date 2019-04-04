@@ -1,32 +1,23 @@
 # -*- coding:utf-8 _*-
 """
 @author: danna.li
-@date: 2019/3/14 
-@file: train_ecg.py
+@date: 2019/4/3 
+@file: train_1d_1c_conv.py
 @description:
 """
 import common.utils as utils
 import common.conf as conf
-from deep.base_nets import conv_1d, conv_1d_simple
+from deep.base_nets import conv_1d, conv_1d_simple, conv_1d_1c
 from keras import Input
 from keras import Model
 from keras.optimizers import Adam
 from deep.callback import log, lr_decay, ckpt_saver, Eval
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.model_selection import train_test_split
-from tradition.extract_feature import get_all_feature
 from common import model_utils
 import os
 import numpy as np
 
-'''
-import tensorflow as tf
-import keras.backend.tensorflow_backend as ktf  # set GPU usage
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-session = tf.Session(config=config)
-ktf.set_session(session)
-'''
 os.environ["CUDA_VISIBLE_DEVICES"] = conf.gpu_index
 
 
@@ -39,8 +30,7 @@ def load_data():
 
 def complie_model():
     input_x = Input([conf.seq_len, conf.num_lead])
-    #out = conv_1d_simple.simple_net(input_x)
-    out = conv_1d.mini_resnet(input_x)
+    out = conv_1d_1c.multiple_net(input_x)
     model = Model(inputs=input_x, outputs=out)
     model.summary()
     model.compile(optimizer=Adam(lr=conf.lr,decay=conf.weight_decay),
@@ -63,16 +53,18 @@ def fit_model(x_train, y_train, x_test, y_test, model, model_index):
                         validation_steps=2,
                         steps_per_epoch=conf.steps_per_epoch,
                         epochs=conf.epochs,
-                        callbacks=[log, lr_decay, ckpt_saver(model_index)])
-    scores = model_utils.cal_f1_metric(model,x_test,y_test)
+                        callbacks=[log, lr_decay, ckpt_saver(model_index), val_accuracy])
+    scores = model_utils.cal_f1_metric(model, x_test, y_test)
     return scores
 
 
 def train():
     scores = []
     x, y = load_data()
+    print(x.shape,y.shape)
     if not conf.ensemble:
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=1 - conf.train_ratio, random_state=0)
+        print('conf.train_ratio:', conf.train_ratio)
+        x_train,x_test, y_train,  y_test = train_test_split(x, y, test_size=1 - conf.train_ratio, random_state=0)
         print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
         model = complie_model()
         score = fit_model(x_train, y_train, x_test, y_test, model, 0)
@@ -90,47 +82,10 @@ def train():
             scores.append(score)
             i = i + 1
         scores = np.array(scores)
-        print('F1 score of all model: ',scores)
-        print('F1 score mean+/-std: ',"%0.3f (+/- %0.3f)" % (np.mean(scores), np.std(scores)))
-
-
-def train_extra_feature():
-    print('获取1维心拍样本及标签...')
-    file_names = utils.get_file_name()
-    all_beats, all_labels = utils.load_data(file_names)
-    x_train, y_train, x_test, y_test = utils.split_data(all_beats, all_labels, train_ratio=0.7)
-    print('获取1维心拍的传统特征...')
-    extra_x = get_all_feature()
-    x_extra_train, _, x_extra_test, _ = utils.split_data(extra_x, all_labels, train_ratio=0.7)
-    gen_train = utils.generator_extra([x_train, x_extra_train], y_train, conf.batch_size)
-    gen_test = utils.generator_extra([x_test, x_extra_test], y_test, conf.batch_size)
-    batch_x, batch_y = next(gen_train)
-    print(len(batch_x), batch_x[0].shape, batch_x[1].shape, batch_y[0].shape)
-
-    input_x = Input([conf.seq_len, 1])
-    extra_x = Input([x_extra_train.shape[1]])
-    main_out, auxiliary_out = conv_1d.resnet_with_extra_x(input_x, extra_x)
-    model = Model(inputs=[input_x, extra_x], outputs=[main_out, auxiliary_out])
-    model.summary()
-    model.compile(optimizer=Adam(lr=conf.lr),
-                  loss='sparse_categorical_crossentropy',
-                  loss_weights=[1., 0.8],
-                  metrics=['sparse_categorical_accuracy'])
-
-    if conf.continue_training:
-        print('loading trained weights from..', conf.weights_to_transfer)
-        model.load_weights(conf.weights_to_transfer, by_name=True)
-
-    model.fit_generator(generator=gen_train,
-                        validation_data=gen_test,
-                        validation_steps=2,
-                        steps_per_epoch=conf.steps_per_epoch,
-                        epochs=conf.epochs,
-                        callbacks=[log, lr_decay, ckpt_saver(0)])
+        print('F1 score of all model: ', scores)
+        print('F1 score mean+/-std: ', "%0.3f (+/- %0.3f)" % (np.mean(scores), np.std(scores)))
 
 
 if __name__ == '__main__':
     if not conf.use_tradition_feature:
         train()
-    else:
-        train_extra_feature()

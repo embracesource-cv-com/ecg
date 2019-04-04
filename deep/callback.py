@@ -7,15 +7,15 @@
 """
 import common.conf as conf
 import keras
-from keras.callbacks import TensorBoard, ReduceLROnPlateau, ModelCheckpoint
+from keras.callbacks import TensorBoard, ReduceLROnPlateau, ModelCheckpoint,EarlyStopping
 import numpy as np
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score,f1_score
 import warnings
 import os
 
 log = TensorBoard(log_dir=conf.output_dir)
-lr_decay = ReduceLROnPlateau(monitor='val_acc', patience=5, factor=0.95)
-
+lr_decay = ReduceLROnPlateau(monitor='val_acc', patience=conf.patience, factor=0.95)
+early_stop = EarlyStopping(monitor='val_loss',min_delta=0,patience=50,verbose=0, mode='auto')
 
 # ckpt_saver = ModelCheckpoint(filepath=conf.output_dir + 'weights.hdf5', verbose=1, save_best_only=True)
 
@@ -34,6 +34,7 @@ def evaluate(model, x, y_true):
     conf_matrix = confusion_matrix(y_true, y_pred)
     acc_report = classification_report(y_true, y_pred)
     f1 = f1_score(y_true, y_pred)
+    print('f1 score:',f1)
     return acc, conf_matrix, acc_report, y_prob, y_pred
 
 
@@ -46,6 +47,6 @@ class Eval(keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs={}):
         if epoch % self.interval == 0:
             acc, conf_matrix, acc_report,_,_ = evaluate(self.model, self.x, self.y_true)
-            print('For epoch' + str(epoch + 1) + ', the accuracy of ' + self.mode + ' is:\n', acc)
-            print('For epoch' + str(epoch + 1) + ', the confusion matrix of ' + self.mode + ' is:\n', conf_matrix)
-            print('For epoch' + str(epoch + 1) + ', the accuracy report of ' + self.mode + ' is:\n', acc_report)
+            #print('For epoch' + str(epoch + 1) + ', the accuracy of ' + self.mode + ' is:\n', acc)
+            #print('For epoch' + str(epoch + 1) + ', the confusion matrix of ' + self.mode + ' is:\n', conf_matrix)
+            #print('For epoch' + str(epoch + 1) + ', the accuracy report of ' + self.mode + ' is:\n', acc_report)

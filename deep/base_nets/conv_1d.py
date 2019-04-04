@@ -9,6 +9,7 @@
 from keras import Model, Input
 import keras.layers as KL
 import common.conf as conf
+from keras.regularizers import l2
 size = conf.conv_kernel_size
 
 
@@ -21,13 +22,16 @@ def conv_unit(x, filters, block, unit, trainable=True):
     x = KL.BatchNormalization(name=bn_name_base + '_1')(x, training=trainable)
     x = KL.Activation(activation='relu')(x)
     x = KL.Dropout(rate=conf.dropout_rate)(x)
-    x = KL.Conv1D(filters=filter1, kernel_size=size, strides=1, padding='same', name=conv_name_base + '_1')(x)
+    x = KL.Conv1D(filters=filter1, kernel_size=size, strides=1, padding='same', name=conv_name_base + '_1',
+                  kernel_regularizer=l2(0.01), bias_regularizer=l2(0.01))(x)
     x = KL.BatchNormalization(name=bn_name_base + '_2')(x, training=trainable)
     x = KL.Activation(activation='relu', name='Prelu_block' + str(block) + '_unit' + str(unit))(x)
     x = KL.Dropout(rate=conf.dropout_rate)(x)
-    x = KL.Conv1D(filters=filter2, kernel_size=size, strides=2, padding='same', name=conv_name_base + '_2')(x)
+    x = KL.Conv1D(filters=filter2, kernel_size=size, strides=2, padding='same', name=conv_name_base + '_2',
+                  kernel_regularizer=l2(0.01), bias_regularizer=l2(0.01))(x)
     shortcut = KL.Conv1D(filters=filter2, kernel_size=size, strides=2,
-                         padding="same", name='conv_block' + str(block) + '_shortcut')(shortcut)
+                         padding="same", name='conv_block' + str(block) + '_shortcut',
+                         kernel_regularizer=l2(0.01), bias_regularizer=l2(0.01))(shortcut)
     x = KL.Add(name=str(block) + '_unit' + str(unit) + '_add_shortcut')([x, shortcut])
     return x
 
@@ -41,11 +45,13 @@ def identity_unit(x, filters, block, unit, trainable=True):
     x = KL.BatchNormalization(name=bn_name_base + '_1')(x, training=trainable)
     x = KL.Activation(activation='relu')(x)
     x = KL.Dropout(rate=conf.dropout_rate)(x)
-    x = KL.Conv1D(filters=filter1, kernel_size=size, strides=1, padding='same', name=conv_name_base + '_1')(x)
+    x = KL.Conv1D(filters=filter1, kernel_size=size, strides=1, padding='same', name=conv_name_base + '_1',
+                  kernel_regularizer=l2(0.01), bias_regularizer=l2(0.01))(x)
     x = KL.BatchNormalization(name=bn_name_base + '_2')(x, training=trainable)
     x = KL.Activation(activation='relu', name='Prelu_block' + str(block) + '_unit' + str(unit))(x)
     x = KL.Dropout(rate=conf.dropout_rate)(x)
-    x = KL.Conv1D(filters=filter2, kernel_size=size, strides=1, padding='same', name=conv_name_base + '_2')(x)
+    x = KL.Conv1D(filters=filter2, kernel_size=size, strides=1, padding='same', name=conv_name_base + '_2',
+                  kernel_regularizer=l2(0.01), bias_regularizer=l2(0.01))(x)
     x = KL.Add(name=str(block) + '_unit' + str(unit) + '_add_shortcut')([x, shortcut])
     return x
 
@@ -83,6 +89,36 @@ def ecg_resnet(input_x):
     x = KL.BatchNormalization(name='out_bn')(x, training=True)
     x = KL.Activation(activation='relu', name='out_relu')(x)
     x = KL.Flatten(name='out_flatten')(x)
+    if not conf.use_tradition_feature:
+        x = KL.Dense(units=conf.num_class, name='dense_soft_out', activation='softmax')(x)
+    return x
+
+
+def mini_resnet(input_x):
+    # head
+    x = KL.Conv1D(filters=64, kernel_size=size, padding='same')(input_x)
+    x = KL.BatchNormalization()(x)
+    x = KL.Activation(activation='relu')(x)
+    # block 1
+    x = conv_unit(x, filters=[64, 64], block=1, unit=1, trainable=True)
+    x = conv_unit(x, filters=[64, 64], block=2, unit=2, trainable=True)
+    # block 3
+    x = conv_unit(x, filters=[128, 128], block=3, unit=1, trainable=True)
+    x = conv_unit(x, filters=[128, 128], block=4, unit=2, trainable=True)
+
+    # block 5
+    x = conv_unit(x, filters=[256, 256], block=5, unit=1, trainable=True)
+    x = conv_unit(x, filters=[256, 256], block=6, unit=2, trainable=True)
+
+    # block 7
+    #x = conv_unit(x, filters=[512, 512], block=7, unit=1, trainable=True)
+    #x = conv_unit(x, filters=[512, 512], block=8, unit=2, trainable=True)
+
+    # tail
+    x = KL.BatchNormalization(name='out_bn')(x, training=True)
+    x = KL.Activation(activation='relu', name='out_relu')(x)
+    #x = KL.Flatten(name='out_flatten')(x)
+    x = KL.GlobalAveragePooling1D()(x)
     if not conf.use_tradition_feature:
         x = KL.Dense(units=conf.num_class, name='dense_soft_out', activation='softmax')(x)
     return x

@@ -24,21 +24,25 @@ seq_len = 5000
 num_lead = 12
 batch_size = 60
 dropout_rate = 0.5
+weight_decay = 0.0005
 lr = 0.001
+patience = 50
 steps_per_epoch =(train_ratio*600)//batch_size
-epochs = 60
+print('steps_per_epoch:',steps_per_epoch)
+epochs = 500
 one_hot = False
 
 gpu_index = "1"
-ensemble = True
+ensemble = False
 ensemble_mode = 'prob_sum'  # label_vote or prob_sum or prob_max
 num_model = 5
 
 continue_training = False
 weights_to_transfer = '/home/model_output/medical/ecg/weights.hdf5'
 use_tradition_feature = False
-feature_type = ['wavelet']
-func_path = 'C:\\Users\\lidan\\OneDrive\\A_markdown\\public\\healthcare\\201902_心电图\\code\\201903_traditional_ecg'
+
+#feature_type = ['wavelet']
+#func_path = 'C:\\Users\\lidan\\OneDrive\\A_markdown\\public\\healthcare\\201902_心电图\\code\\201903_traditional_ecg'
 #func_path = '/home/github/py_data_mining/medical/tradition_ecg'
 
 '''

@@ -49,6 +49,7 @@ def load_label():
 def split_data(all_x, all_y, train_ratio):
     np.random.seed(2019)
     train = np.random.choice([True, False], len(all_y), replace=True, p=[train_ratio, 1 - train_ratio])
+    print(np.unique(train,return_counts=True))
     x_train = all_x[train]
     x_test = all_x[~train]
     y_train = all_y[train]
@@ -62,12 +63,13 @@ def generator(x, y, batch_size):
     while True:
         np.random.seed(2019)
         index = np.random.randint(0, len(y), batch_size)
-        yield x[index].reshape([batch_size, -1,  conf.num_lead]), y[index]
+        yield x[index], y[index]
 
 
 def gen_no_random(x, y, batch_size):
     steps = math.ceil(len(x) / batch_size)
+    print('steps:',steps)
     while True:
         for i in range(steps):
             index = range(i * batch_size,i * batch_size + batch_size)
-            yield x[index].reshape([batch_size, -1,  conf.num_lead]), y[index]
+            yield x[index], y[index]
