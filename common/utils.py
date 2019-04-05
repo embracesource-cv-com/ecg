@@ -14,7 +14,7 @@ import scipy.io as sio
 import numpy as np
 import math
 from sklearn.utils import shuffle
-
+import random
 
 def re_create_path(path):
     if os.path.exists(path):
@@ -47,15 +47,19 @@ def load_label():
 
 
 def split_data(all_x, all_y, train_ratio):
-    np.random.seed(2019)
-    train = np.random.choice([True, False], len(all_y), replace=True, p=[train_ratio, 1 - train_ratio])
-    print(np.unique(train,return_counts=True))
+    #np.random.seed(2019)
+    #random.seed(conf.seed)
+    train_size = int(conf.num_samples * train_ratio)
+    train = random.sample(range(conf.num_samples), train_size)  # 无重复
+    train = np.array(train)
+    print(train)
+    #train = np.random.choice([True, False], len(all_y), replace=True, p=[train_ratio, 1 - train_ratio])
     x_train = all_x[train]
     x_test = all_x[~train]
     y_train = all_y[train]
     y_test = all_y[~train]
-    x_train, y_train= shuffle(x_train, y_train, random_state=conf.seed)
-    x_test, y_test = shuffle(x_test, y_test, random_state=conf.seed)
+    #x_train, y_train= shuffle(x_train, y_train, random_state=conf.seed)
+    #x_test, y_test = shuffle(x_test, y_test, random_state=conf.seed)
     return x_train, y_train, x_test, y_test
 
 
@@ -67,7 +71,7 @@ def generator(x, y, batch_size):
 
 
 def gen_no_random(x, y, batch_size):
-    steps = math.ceil(len(x) / batch_size)
+    steps = math.floor(len(x) / batch_size)
     print('steps:',steps)
     while True:
         for i in range(steps):

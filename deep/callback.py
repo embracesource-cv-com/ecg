@@ -30,12 +30,12 @@ def evaluate(model, x, y_true):
     y_pred = np.argmax(y_prob, axis=1)
     if conf.one_hot:
         y_true = np.argmax(y_true, axis=1)
-    acc = accuracy_score(y_true, y_pred)
-    conf_matrix = confusion_matrix(y_true, y_pred)
-    acc_report = classification_report(y_true, y_pred)
+    #acc = accuracy_score(y_true, y_pred)
+    #conf_matrix = confusion_matrix(y_true, y_pred)
+    #acc_report = classification_report(y_true, y_pred)
     f1 = f1_score(y_true, y_pred)
     print('f1 score:',f1)
-    return acc, conf_matrix, acc_report, y_prob, y_pred
+    #return acc, conf_matrix, acc_report, y_prob, y_pred
 
 
 class Eval(keras.callbacks.Callback):
@@ -46,7 +46,8 @@ class Eval(keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs={}):
         if epoch % self.interval == 0:
-            acc, conf_matrix, acc_report,_,_ = evaluate(self.model, self.x, self.y_true)
+            evaluate(self.model, self.x, self.y_true)
+            #acc, conf_matrix, acc_report,_,_ = evaluate(self.model, self.x, self.y_true)
             #print('For epoch' + str(epoch + 1) + ', the accuracy of ' + self.mode + ' is:\n', acc)
             #print('For epoch' + str(epoch + 1) + ', the confusion matrix of ' + self.mode + ' is:\n', conf_matrix)
             #print('For epoch' + str(epoch + 1) + ', the accuracy report of ' + self.mode + ' is:\n', acc_report)

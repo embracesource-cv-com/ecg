@@ -63,8 +63,8 @@ def train():
     x, y = load_data()
     print(x.shape,y.shape)
     if not conf.ensemble:
-        print('conf.train_ratio:', conf.train_ratio)
-        x_train,x_test, y_train,  y_test = train_test_split(x, y, test_size=1 - conf.train_ratio, random_state=0)
+        x_train, y_train, x_test, y_test = utils.split_data(x, y, train_ratio=conf.train_ratio)
+        # x_train,x_test, y_train,  y_test = train_test_split(x, y, test_size=1 - conf.train_ratio, random_state=0)
         print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
         model = complie_model()
         score = fit_model(x_train, y_train, x_test, y_test, model, 0)

@@ -18,7 +18,7 @@ from tradition.extract_feature import get_all_feature
 from common import model_utils
 import os
 import numpy as np
-
+from sklearn.utils import shuffle
 '''
 import tensorflow as tf
 import keras.backend.tensorflow_backend as ktf  # set GPU usage
@@ -34,6 +34,8 @@ def load_data():
     x = utils.load_data()
     x = x.transpose(0, 2, 1)
     y = utils.load_label()
+    x, y = shuffle(x,y, random_state=conf.seed)
+    print('x.shape,y.shape',x.shape,y.shape)
     return x, y
 
 
@@ -63,7 +65,7 @@ def fit_model(x_train, y_train, x_test, y_test, model, model_index):
                         validation_steps=2,
                         steps_per_epoch=conf.steps_per_epoch,
                         epochs=conf.epochs,
-                        callbacks=[log, lr_decay, ckpt_saver(model_index)])
+                        callbacks=[log, lr_decay, ckpt_saver(model_index),val_accuracy])
     scores = model_utils.cal_f1_metric(model,x_test,y_test)
     return scores
 
@@ -72,13 +74,15 @@ def train():
     scores = []
     x, y = load_data()
     if not conf.ensemble:
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=1 - conf.train_ratio, random_state=0)
+        x_train, y_train, x_test, y_test = utils.split_data(x, y, train_ratio=conf.train_ratio)
+        # x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=1 - conf.train_ratio, random_state=0)
         print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
         model = complie_model()
         score = fit_model(x_train, y_train, x_test, y_test, model, 0)
         print('F1 score of the model: ', score)
     else:
-        sss = StratifiedShuffleSplit(n_splits=conf.num_model, test_size=1 - conf.train_ratio, random_state=conf.seed)
+        sss = StratifiedShuffleSplit(n_splits=conf.num_model,test_size=1-conf.train_ratio,
+                                     random_state=conf.seed,)
         i = 1
         for train_index, test_index in sss.split(x, y):
             print("TRAIN:", train_index, "TEST:", test_index)
