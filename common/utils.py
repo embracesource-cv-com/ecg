@@ -48,16 +48,18 @@ def load_label():
 
 def split_data(all_x, all_y, train_ratio):
     #np.random.seed(2019)
-    #random.seed(conf.seed)
+    random.seed(conf.seed)
     train_size = int(conf.num_samples * train_ratio)
     train = random.sample(range(conf.num_samples), train_size)  # 无重复
     train = np.array(train)
     print(train)
+    test = np.array([i for i in range(conf.num_samples) if i not in train])
+    print(test)
     #train = np.random.choice([True, False], len(all_y), replace=True, p=[train_ratio, 1 - train_ratio])
     x_train = all_x[train]
-    x_test = all_x[~train]
     y_train = all_y[train]
-    y_test = all_y[~train]
+    x_test = all_x[test]
+    y_test = all_y[test]
     #x_train, y_train= shuffle(x_train, y_train, random_state=conf.seed)
     #x_test, y_test = shuffle(x_test, y_test, random_state=conf.seed)
     return x_train, y_train, x_test, y_test
