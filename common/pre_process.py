@@ -10,7 +10,7 @@ import pywt
 import numpy as np
 
 
-def rm_noise(signal, wave_name, level):
+def rm_noise(signal, wave_name='bior2.6', level=8):
     '''
     小波去除高频噪声和基线漂移
     :param signal: 1-D array, 信号
@@ -40,7 +40,7 @@ def rm_noise(signal, wave_name, level):
     return wave_upper
 
 
-def rm_noise_2d(signals, wave_name, level):
+def rm_noise_2d(signals, wave_name='bior2.6', level=8):
     results = np.empty_like(signals)
     for i in range(len(signals)):
         result=rm_noise(signals[i], wave_name, level)
@@ -48,7 +48,7 @@ def rm_noise_2d(signals, wave_name, level):
     return results
 
 
-def rm_noise_3d(signals, wave_name, level):
+def rm_noise_3d(signals, wave_name='bior2.6', level=8):
     results = np.empty_like(signals)
     for i in range(len(signals)):
         result = rm_noise_2d(signals[i], wave_name, level)

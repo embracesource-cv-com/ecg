@@ -100,15 +100,15 @@ def mini_resnet(input_x):
     x = KL.BatchNormalization()(x)
     x = KL.Activation(activation='relu')(x)
     # block 1
-    x = conv_unit(x, filters=[64, 64], block=1, unit=1, trainable=True)
-    x = conv_unit(x, filters=[64, 64], block=2, unit=2, trainable=True)
+    x = conv_unit(x, filters=[16, 16], block=1, unit=1, trainable=True)
+    x = conv_unit(x, filters=[16, 16], block=2, unit=2, trainable=True)
     # block 3
-    x = conv_unit(x, filters=[128, 128], block=3, unit=1, trainable=True)
-    x = conv_unit(x, filters=[128, 128], block=4, unit=2, trainable=True)
+    x = conv_unit(x, filters=[32, 32], block=3, unit=1, trainable=True)
+    x = conv_unit(x, filters=[32, 32], block=4, unit=2, trainable=True)
 
     # block 5
-    x = conv_unit(x, filters=[256, 256], block=5, unit=1, trainable=True)
-    x = conv_unit(x, filters=[256, 256], block=6, unit=2, trainable=True)
+    x = conv_unit(x, filters=[64, 64], block=5, unit=1, trainable=True)
+    x = conv_unit(x, filters=[64, 64], block=6, unit=2, trainable=True)
 
     # block 7
     #x = conv_unit(x, filters=[512, 512], block=7, unit=1, trainable=True)
@@ -121,6 +121,28 @@ def mini_resnet(input_x):
     x = KL.GlobalAveragePooling1D()(x)
     if not conf.use_tradition_feature:
         x = KL.Dense(units=conf.num_class, name='dense_soft_out', activation='softmax')(x)
+    return x
+
+
+def simple_net(nn_inputs):
+    x = KL.Conv1D(32, 16, strides=2,activation='relu',padding='same')(nn_inputs)
+    x = KL.Conv1D(32, 16,strides=2, activation='relu',padding='same')(x)
+    x = KL.MaxPooling1D(pool_size=2)(x)
+    x = KL.Conv1D(64, 16, strides=2,activation='relu',padding='same')(x)
+    x = KL.Conv1D(64, 16, strides=2,activation='relu',padding='same')(x)
+    x = KL.MaxPooling1D(pool_size=2)(x)
+    x = KL.Conv1D(128, 16, strides=2,activation='relu',padding='same')(x)
+    x = KL.Conv1D(128, 16, strides=2,activation='relu',padding='same')(x)
+    x = KL.MaxPooling1D(pool_size=2)(x)
+    #x = KL.Conv1D(256, 16, strides=2,activation='relu',padding='same')(x)
+    #x = KL.Conv1D(256, 16, strides=2,activation='relu',padding='same')(x)
+    #x = KL.MaxPooling1D(pool_size=2)(x)
+    #x = KL.Flatten()(x)
+    #x = KL.Dense(128, activation='relu')(x)
+    #x = KL.Dropout(conf.dropout_rate)(x)
+    x = KL.GlobalAveragePooling1D()(x)
+    x = KL.Dropout(conf.dropout_rate)(x)
+    x = KL.Dense(conf.num_class, name='softmax_out',activation='softmax')(x)
     return x
 
 

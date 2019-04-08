@@ -7,6 +7,7 @@
 """
 from common import utils
 from common import conf
+from common import pre_process
 from deep.callback import log, lr_decay, ckpt_saver, Eval
 from sklearn.model_selection import KFold
 from common import model_utils
@@ -21,6 +22,7 @@ def load_data():
     x = x.transpose(0, 2, 1)
     y = utils.load_label()
     x, y = shuffle(x, y, random_state=conf.seed)
+    x = pre_process.rm_noise_2d(signals=x, wave_name='bior2.6', level=8)
     print('x.shape,y.shape', x.shape, y.shape)
     return x, y
 
@@ -48,7 +50,7 @@ def fit_model(x_train, y_train, x_test, y_test, model, model_index):
                         validation_steps=2,
                         steps_per_epoch=conf.steps_per_epoch,
                         epochs=conf.epochs,
-                        callbacks=[log, lr_decay, ckpt_saver(model_index), val_accuracy])
+                        callbacks=[log, lr_decay, ckpt_saver(model_index)])
     scores = model_utils.cal_f1_metric(model, x_test, y_test)
     return scores
 
@@ -56,9 +58,10 @@ def fit_model(x_train, y_train, x_test, y_test, model, model_index):
 def train_model(x, y, model_compiled):
     scores = []
     if not conf.ensemble:
+        print(x.shape,y.shape)
         x_train, y_train, x_test, y_test = utils.split_data(x, y, train_ratio=conf.train_ratio)
         # x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=1 - conf.train_ratio, random_state=0)
-        print(x_train.shape, y_train.shape, x_test.shape, y_test.shape, y_test)
+        print(x_train.shape, y_train.shape, x_test.shape, y_test.shape, '\n',y_train,'\n',y_test)
         model = model_compiled
         score = fit_model(x_train, y_train, x_test, y_test, model, 0)
         print('F1 score of the model: ', score)

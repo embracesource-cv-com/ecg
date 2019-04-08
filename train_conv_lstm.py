@@ -1,17 +1,27 @@
 # -*- coding:utf-8 _*-
 """
 @author: danna.li
-@date: 2019/3/14 
-@file: train_ecg.py
+@date: 2019/4/8 
+@file: train_conv_lstm.py
 @description:
 """
+
+# -*- coding:utf-8 _*-
+"""
+@author: danna.li
+@date: 2019/4/7 
+@file: train_2d_conv.py
+@description:
+"""
+
 from common import conf
-from deep.base_nets import conv_1d
+from deep.base_nets import conv_lstm
 from keras import Input
 from deep.train_common import load_data, compile_model, train_model
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = conf.gpu_index
 import numpy as np
+from common import utils
+os.environ["CUDA_VISIBLE_DEVICES"] = conf.gpu_index
 '''
 import tensorflow as tf
 import keras.backend.tensorflow_backend as ktf  # set GPU usage
@@ -23,33 +33,29 @@ ktf.set_session(session)
 
 
 def choose_model(input_x):
-
-    model_conf = conf.model_1d
-    if model_conf == 'simple_net':
-        out = conv_1d.simple_net(input_x)
-    if model_conf == 'ecg_resnet':
-        out = conv_1d.ecg_resnet(input_x)
-    if model_conf == 'mini_resnet':
-        out = conv_1d.mini_resnet(input_x)
-    return out
-
-
-def train_tmp():
-    x, y = load_data()
-    input_x = Input([conf.seq_len, conf.num_lead])
-    out = choose_model(input_x)
-    model_compiled = compile_model(input_x, out)
-    train_model(x, y, model_compiled)
+    out = conv_lstm.conv_lstm(input_x)
+    return  out
 
 
 def train():
     x, y = load_data()
-    x = x.reshape(-1, 5000,1)
-    y = np.repeat(y, 12)
-    print('x.shape,y.shape', x.shape, y.shape)
-    input_x = Input([conf.seq_len,1])
+    x = x[:,:,1]
+    print(x.shape)
+    x = utils.seg_signal(x,conf.seq_len,conf.seg_len)
+    print('x_seg.shape:',x.shape)
+    channel = int(conf.seq_len/conf.seg_len)
+    input_x = Input([conf.seg_len, channel])
     out = choose_model(input_x)
     model_compiled = compile_model(input_x, out)
     train_model(x, y, model_compiled)
+
+
+def train_tmp():
+    x, y = load_data()
+    input_x = Input([5000, 12])
+    out = choose_model(input_x)
+    model_compiled = compile_model(input_x, out)
+    train_model(x, y, model_compiled)
+
 if __name__ == '__main__':
     train()
