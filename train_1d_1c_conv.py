@@ -10,15 +10,8 @@ from deep.base_nets import conv_1d_1c
 from keras import Input
 from deep.train_common import load_data, compile_model, train_model
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = conf.gpu_index
-'''
-import tensorflow as tf
-import keras.backend.tensorflow_backend as ktf  # set GPU usage
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-session = tf.Session(config=config)
-ktf.set_session(session)
-'''
 
 
 def choose_model():

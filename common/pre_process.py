@@ -43,8 +43,8 @@ def rm_noise(signal, wave_name='bior2.6', level=8):
 def rm_noise_2d(signals, wave_name='bior2.6', level=8):
     results = np.empty_like(signals)
     for i in range(len(signals)):
-        result=rm_noise(signals[i], wave_name, level)
-        results[i]=result
+        result = rm_noise(signals[i], wave_name, level)
+        results[i] = result
     return results
 
 

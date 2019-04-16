@@ -42,7 +42,7 @@ def do_svm(x_train, y_train, x_test, y_test, save_model, result_file):
     i = maxLoc[0]
     model = clf[i]
     if save_model:
-        pickle.dump(model, open(os.path.join(conf.output_dir,"svm.pickle.dat"), "wb"))
+        pickle.dump(model, open(os.path.join(conf.output_dir, "svm.pickle.dat"), "wb"))
 
     # save model performace
     evaluate(model, x_train, y_train, x_test, y_test, result_file)
@@ -52,7 +52,7 @@ def do_knn(x_train, y_train, x_test, y_test, save_model, result_file):
     model = KNeighborsClassifier(n_neighbors=conf.num_class)
     model.fit(x_train, y_train)
     if save_model:
-        pickle.dump(model, open(os.path.join(conf.output_dir,"knn.pickle.dat"), "wb"))
+        pickle.dump(model, open(os.path.join(conf.output_dir, "knn.pickle.dat"), "wb"))
 
     # save model performace
     evaluate(model, x_train, y_train, x_test, y_test, result_file)
@@ -77,7 +77,6 @@ def do_xgb(x_train, y_train, x_test, y_test, save_model, result_file, grid_searc
 
     # save model to file
     if save_model:
-        pickle.dump(model, open(os.path.join(conf.output_dir,"doXgb.pickle.dat"), "wb"))
+        pickle.dump(model, open(os.path.join(conf.output_dir, "doXgb.pickle.dat"), "wb"))
     # save model performace
     evaluate(model, x_train, y_train, x_test, y_test, result_file)
-

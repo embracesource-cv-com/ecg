@@ -6,27 +6,13 @@
 @description:
 """
 
-# -*- coding:utf-8 _*-
-"""
-@author: danna.li
-@date: 2019/3/14 
-@file: train_ecg.py
-@description:
-"""
 from common import conf
 from deep.base_nets import conv_1d
 from keras import Input
 from deep.train_common import load_data, compile_model, train_model
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = conf.gpu_index
-'''
-import tensorflow as tf
-import keras.backend.tensorflow_backend as ktf  # set GPU usage
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-session = tf.Session(config=config)
-ktf.set_session(session)
-'''
 
 
 def choose_model():

@@ -7,7 +7,7 @@
 """
 import pandas as pd
 from sklearn import metrics
-from sklearn.metrics import classification_report,f1_score
+from sklearn.metrics import classification_report, f1_score
 from common import conf
 import numpy as np
 import keras.backend as K
@@ -42,20 +42,19 @@ def save_result(model, name, y_train, y_train_pred, y_vali, y_vali_pred):
     # return train_acc, val_acc, conf1, conf2, train_report, val_report
 
 
-def evaluate(model,x_train,y_train,x_test,y_test,result_file):
+def evaluate(model, x_train, y_train, x_test, y_test, result_file):
     y_train_pred = model.predict(x_train)
     y_test_pred = model.predict(x_test)
-    save_result(model, result_file, y_train, y_train_pred,y_test, y_test_pred)
+    save_result(model, result_file, y_train, y_train_pred, y_test, y_test_pred)
 
 
-
-def cal_f1_metric(model,x,y_true):
+def cal_f1_metric(model, x, y_true):
     y_prob = model.predict(x, verbose=0)
     y_pred = np.argmax(y_prob, axis=1)
     if conf.one_hot:
         y_true = np.argmax(y_true, axis=1)
     f1 = f1_score(y_true, y_pred)
-    f1 = np.round(f1,3)
+    f1 = np.round(f1, 3)
     return f1
 
 
@@ -85,9 +84,10 @@ def keras_f1_score(y_true, y_pred):
         predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
         precision = true_positives / (predicted_positives + K.epsilon())
         return precision
+
     precision = precision(y_true, y_pred)
     recall = recall(y_true, y_pred)
-    f1 = 2*((precision*recall)/(precision+recall+K.epsilon()))
+    f1 = 2 * ((precision * recall) / (precision + recall + K.epsilon()))
     return f1
 
 

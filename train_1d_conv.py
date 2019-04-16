@@ -9,21 +9,13 @@ from common import conf
 from deep.base_nets import conv_1d
 from keras import Input
 from deep.train_common import load_data, compile_model, train_model
-import os
-os.environ["CUDA_VISIBLE_DEVICES"] = conf.gpu_index
 import numpy as np
-'''
-import tensorflow as tf
-import keras.backend.tensorflow_backend as ktf  # set GPU usage
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-session = tf.Session(config=config)
-ktf.set_session(session)
-'''
+import os
+
+os.environ["CUDA_VISIBLE_DEVICES"] = conf.gpu_index
 
 
 def choose_model(input_x):
-
     model_conf = conf.model_1d
     if model_conf == 'simple_net':
         out = conv_1d.simple_net(input_x)
@@ -44,12 +36,14 @@ def train_tmp():
 
 def train():
     x, y = load_data()
-    x = x.reshape(-1, 5000,1)
+    x = x.reshape(-1, 5000, 1)
     y = np.repeat(y, 12)
     print('x.shape,y.shape', x.shape, y.shape)
-    input_x = Input([conf.seq_len,1])
+    input_x = Input([conf.seq_len, 1])
     out = choose_model(input_x)
     model_compiled = compile_model(input_x, out)
     train_model(x, y, model_compiled)
+
+
 if __name__ == '__main__':
     train()

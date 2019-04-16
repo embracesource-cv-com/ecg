@@ -63,7 +63,7 @@ def seg_signal(x, seq_len, seg_len):
 def split_data(all_x, all_y, train_ratio):
     # np.random.seed(2019)
     random.seed(conf.seed)
-    num_samples = conf.num_samples *12
+    num_samples = conf.num_samples * 12
     train_size = int(num_samples * train_ratio)
     train = random.sample(range(num_samples), train_size)  # 无重复
     train = np.array(train)

@@ -22,14 +22,14 @@ if __name__ == '__main__':
     utils.re_create_path(conf.output_dir)
     save_model = False
     print('fitting knn model..')
-    result_file = os.path.join(conf.output_dir,'knn01.txt')
+    result_file = os.path.join(conf.output_dir, 'knn01.txt')
     tradition_model.do_knn(x_train, y_train, x_test, y_test, save_model, result_file)
 
     print('fitting svm model..')
-    result_file = os.path.join(conf.output_dir,'svm01.txt')
+    result_file = os.path.join(conf.output_dir, 'svm01.txt')
     tradition_model.do_svm(x_train, y_train, x_test, y_test, save_model, result_file)
 
     print('fitting xgb model..')
     grid_search = False
-    result_file = os.path.join(conf.output_dir,'xgb01.txt')
+    result_file = os.path.join(conf.output_dir, 'xgb01.txt')
     tradition_model.do_xgb(x_train, y_train, x_test, y_test, save_model, result_file, grid_search)

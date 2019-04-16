@@ -9,21 +9,14 @@
 import common.conf as conf
 import common.utils as utils
 from deep.callback import evaluate
-from sklearn.metrics import confusion_matrix, accuracy_score,classification_report
+from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
 from keras.models import load_model
 import numpy as np
 import os
 import sys
 import time
 from tradition.extract_feature import get_all_feature
-'''
-import tensorflow as tf
-import keras.backend.tensorflow_backend as ktf  # set GPU usage
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-session = tf.Session(config=config)
-ktf.set_session(session)
-'''
+
 os.environ["CUDA_VISIBLE_DEVICES"] = conf.gpu_index
 
 
@@ -56,7 +49,7 @@ def ensemble_label(probs, preds, mode):
 
 def ensemble_model():
     start_time = time.time()
-    _,_,x_test, y_test = load_data()
+    _, _, x_test, y_test = load_data()
     model_names = [os.path.join(conf.output_dir, str(i + 1) + '_weights.hdf5') for i in range(conf.num_model)]
     # model_names = model_names[:3]
     accs = []
@@ -64,13 +57,13 @@ def ensemble_model():
     y_preds = []
     for model in model_names:
         model_loaded = load_model(model)
-        acc, conf_matrix, acc_report, y_prob,y_pred = evaluate(model=model_loaded, x=x_test, y_true=y_test)
+        acc, conf_matrix, acc_report, y_prob, y_pred = evaluate(model=model_loaded, x=x_test, y_true=y_test)
         print('[%s] Accuracy: %1.5f' % (model, acc))
         print(acc_report)
         accs.append(acc)
         y_probs.append(y_prob)
         y_preds.append(y_pred)
-    ens_label = ensemble_label(probs=np.array(y_probs), preds = np.array(y_preds),mode=conf.ensemble_mode)
+    ens_label = ensemble_label(probs=np.array(y_probs), preds=np.array(y_preds), mode=conf.ensemble_mode)
     ens_acc = accuracy_score(y_test, ens_label)
     report = classification_report(y_test, ens_label)
     std, mean = np.std(accs), np.mean(accs)
@@ -81,9 +74,9 @@ def ensemble_model():
 
 
 def verify_single_model():
-    x_test, y_test, _,_ = load_data()
+    x_test, y_test, _, _ = load_data()
     model_loaded = load_model(os.path.join(conf.output_dir, '0_weights.hdf5'))
-    acc, conf_matrix, acc_report,_,_ = evaluate(model=model_loaded, x=x_test, y_true=y_test)
+    acc, conf_matrix, acc_report, _, _ = evaluate(model=model_loaded, x=x_test, y_true=y_test)
     print('the accuracy of ' + ' is:\n', acc)
     print('the confusion matrix of ' + ' is:\n', conf_matrix)
     print('the accuracy report of ' + ' is:\n', acc_report)
