@@ -8,16 +8,16 @@
 
 from keras.layers import *
 from keras.models import *
-import common.conf as conf
+from common.conf import current_config as conf
 import keras.backend as K
 
 
 def sub_net(nn_inputs):
-    x = Conv1D(16, 16, strides=2, activation='relu', padding='same')(nn_inputs)
-    x = Conv1D(16, 16, strides=2, activation='relu', padding='same')(x)
+    x = Conv1D(16, 32, strides=2, activation='relu', padding='same')(nn_inputs)
+    x = Conv1D(16, 32, strides=2, activation='relu', padding='same')(x)
     x = MaxPooling1D(pool_size=2)(x)
-    x = Conv1D(32, 16, strides=2, activation='relu', padding='same')(x)
-    x = Conv1D(32, 16, strides=2, activation='relu', padding='same')(x)
+    x = Conv1D(32, 32, strides=2, activation='relu', padding='same')(x)
+    x = Conv1D(32, 32, strides=2, activation='relu', padding='same')(x)
     x = MaxPooling1D(pool_size=2)(x)
     # x = Conv1D(128, 16, strides=2, activation='relu', padding='same')(x)
     # x = Conv1D(128, 16, strides=2, activation='relu', padding='same')(x)

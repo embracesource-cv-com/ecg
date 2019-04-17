@@ -1,32 +1,21 @@
 # -*- coding:utf-8 _*-
 """
 @author: danna.li
-@date: 2019/3/16 
-@file: verify.py
+@date: 2019/4/8 
+@file: verify_1d_conv.py
 @description:
 """
 
-import common.conf as conf
-import common.utils as utils
+from common.conf import current_config as conf
 from deep.callback import evaluate
-from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
+from sklearn.metrics import accuracy_score, classification_report
 from keras.models import load_model
 import numpy as np
+from train_1d_conv import lead_to_sample
 import os
-import sys
 import time
-from tradition.extract_feature import get_all_feature
 
 os.environ["CUDA_VISIBLE_DEVICES"] = conf.gpu_index
-
-
-def load_data():
-    print('获取样本及标签...')
-    x = utils.load_data()
-    x = x.transpose(0, 2, 1)
-    y = utils.load_label()
-    _, _, x_test, y_test = utils.split_data(x, y, train_ratio=conf.train_ratio)
-    return x_test, y_test, x, y
 
 
 def vote_label(y_preds, i):
@@ -36,12 +25,13 @@ def vote_label(y_preds, i):
 
 
 def ensemble_label(probs, preds, mode):
+    ens_label = None
     if mode == 'label_vote':
         ens_label = [vote_label(preds, i) for i in range(preds.shape[1])]
-    if mode == 'prob_sum':
+    elif mode == 'prob_sum':
         sum_probs = np.sum(probs, axis=0)
         ens_label = np.argmax(sum_probs, axis=1)
-    if mode == 'prob_max':
+    elif mode == 'prob_max':
         max_probs = np.max(probs, axis=0)
         ens_label = np.argmax(max_probs, axis=1)
     return ens_label
@@ -49,7 +39,8 @@ def ensemble_label(probs, preds, mode):
 
 def ensemble_model():
     start_time = time.time()
-    _, _, x_test, y_test = load_data()
+    _, _, x_test, y_test = lead_to_sample()
+    print('x_test.shape,y_test.shape', x_test.shape, y_test.shape)
     model_names = [os.path.join(conf.output_dir, str(i + 1) + '_weights.hdf5') for i in range(conf.num_model)]
     # model_names = model_names[:3]
     accs = []
@@ -74,39 +65,33 @@ def ensemble_model():
 
 
 def verify_single_model():
-    x_test, y_test, _, _ = load_data()
+    _, _, x_test, y_test = lead_to_sample()
+    print('x_test.shape,y_test.shape', x_test.shape, y_test.shape)
     model_loaded = load_model(os.path.join(conf.output_dir, '0_weights.hdf5'))
-    acc, conf_matrix, acc_report, _, _ = evaluate(model=model_loaded, x=x_test, y_true=y_test)
-    print('the accuracy of ' + ' is:\n', acc)
-    print('the confusion matrix of ' + ' is:\n', conf_matrix)
-    print('the accuracy report of ' + ' is:\n', acc_report)
+    evaluate(model=model_loaded, x=x_test, y_true=y_test)
 
 
-def verify_extra_x():
-    print('获取1维心拍的传统特征...')
-    extra_x = get_all_feature()
-    x_test, y_test, _, all_labels = load_data()
-    x_extra_train, _, x_extra_test, _ = utils.split_data(extra_x, all_labels, train_ratio=0.7)
-    val_x = [x_test.reshape(-1, conf.seq_len, conf.num_lead), x_extra_test]
-    val_y = [y_test, y_test]
+def vote_label_1s(y_preds, i):
+    unique_pred, counts = np.unique(y_preds[i, :], return_counts=True)
+    label = unique_pred[np.argmax(counts)]
+    return label
 
-    model_loaded = load_model(os.path.join(conf.output_dir, 'weights.hdf5'))
-    loss, loss_main, loss_aux, acc_main, acc_aux = model_loaded.evaluate(val_x, val_y)
-    print(loss, loss_main, loss_aux, acc_main, acc_aux)
-    predicted = model_loaded.predict(val_x, batch_size=64)
-    predicted = predicted[0]
-    predicted_label = np.argmax(predicted, axis=1)
-    val_y = val_y[0]
-    confusion_m = confusion_matrix(val_y, predicted_label)
-    print('loss:', loss, '\n', 'accuracy:', acc_main, '\n', 'confusion matrix:\n', confusion_m)
+
+def verify_single_model_1s():
+    _, _, x_test, y_test = lead_to_sample()
+    print('x_test.shape,y_test.shape', x_test.shape, y_test.shape)
+    model_loaded = load_model(os.path.join(conf.output_dir, '0_weights.hdf5'))
+    x_test = x_test.reshape([-1, 5000, 1])
+    y_prob = model_loaded.predict(x_test, verbose=0)
+    y_pred = np.argmax(y_prob, axis=1)
+    print(y_pred.shape)
+    y_pred = y_pred.reshape([-1, 12])
+    y_pred = [vote_label_1s(y_pred, i) for i in range(y_pred.shape[0])]
+    print(classification_report(y_test, y_pred))
 
 
 if __name__ == '__main__':
-    if not conf.use_tradition_feature:
-        if conf.ensemble:
-            print('yes')
-            ensemble_model()
-        else:
-            verify_single_model()
-    else:
-        verify_extra_x()
+    if conf.ensemble:
+        ensemble_model()
+    elif conf.lead_as_sample:
+        verify_single_model_1s()

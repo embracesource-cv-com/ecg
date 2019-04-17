@@ -6,7 +6,7 @@
 @description:
 """
 
-from common import conf
+from common.conf import current_config as conf
 from deep.base_nets import simple_net, resnet
 from keras import Input
 from deep.train_common import load_data, compile_model, train_model
@@ -21,7 +21,7 @@ def choose_model():
     model_conf = conf.model_2d
     if model_conf == 'simple_net':
         out = simple_net.simple_net(input_x)
-    if model_conf == 'resnet':
+    elif model_conf == 'resnet':
         out = resnet.resnet(input_x, 'resnet50', False, True)
     return input_x, out
 

@@ -5,14 +5,14 @@
 @file: train_conv_lstm.py
 @description:
 """
-
-from common import conf
+from common.conf import current_config as conf
 from deep.base_nets import conv_lstm
 from keras import Input
 from deep.train_common import load_data, compile_model, train_model
 import os
-import numpy as np
 from common import utils
+
+os.environ["CUDA_VISIBLE_DEVICES"] = conf.gpu_index
 
 
 def choose_model(input_x):

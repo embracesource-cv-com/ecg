@@ -9,16 +9,15 @@ import multiprocessing as mp
 from wfdb import processing
 import pywt
 import numpy as np
-import common.conf as conf
-from tradition.detect_points import detect_points_in_all
+from common.conf import current_config as conf
 
 
 def reject_outliers(data, m=2.):
-    '''
+    """
     :param data: 1-D array
     :param m: remove a value if it is m times away from median
     :return: 1-D array with outliers removed
-    '''
+    """
     d = np.abs(data - np.median(data))
     mdev = np.median(d)
     s = d / mdev if mdev else 0.
@@ -47,11 +46,11 @@ def cal_heart_rate(signals):
 
 
 def cal_amp_feature(p_peak, q_peak, r_peak, s_peak, t_peak, q_begin, p_begin, t_begin, p_end, s_end, t_end):
-    '''
+    """
     幅值特征, amp for amplitude，不同点之间的垂直距离，幅值加减顺序使正常心拍的特征的幅值都>0
     p_peak, q_peak, r_peak, s_peak, t_peak,q_begin, p_begin, t_begin, p_end, s_end, t_end: 2-d,array,(num_beats,[x,y])
     return: 2-D array，（num_beats,num_amplitude_feature)
-    '''
+    """
     # 幅值特征, amp for amplititude，使正常心拍的振幅都>0
     p_q_amp = p_peak[:, 1] - q_peak[:, 1]  # P峰--Q峰
     r_q_amp = r_peak[:, 1] - q_peak[:, 1]  # Q峰--R峰
@@ -73,11 +72,11 @@ def cal_amp_feature(p_peak, q_peak, r_peak, s_peak, t_peak, q_begin, p_begin, t_
 
 
 def cal_dis_feature(p_peak, q_peak, r_peak, s_peak, t_peak, q_begin, p_begin, t_begin, p_end, s_end, t_end):
-    '''
+    """
     距离特征，不同点之间的水平距离
     p_peak, q_peak, r_peak, s_peak, t_peak,q_begin, p_begin, t_begin, p_end, s_end, t_end: 2-d,array,(num_beats,[x,y])
     return: 2-D array，（num_beats,num_distance_feature)
-    '''
+    """
     pb_qb_dis = q_begin[:, 0] - p_begin[:, 0]  # P开始--Q开始，PR间期，>0.12s,房性早搏
     qb_tb_dis = t_begin[:, 0] - q_begin[:, 0]  # Q开始--T开始，QT间期，变宽，室性早搏
     qb_r_se_dis = s_end[:, 0] - q_begin[:, 0]  # Q开始--S结束，QRS间期，>0.12s，束支传导阻滞
@@ -121,7 +120,7 @@ def get_all_feature(signals):
         print('心率特征计算中...')
         heart_rate_feature = cal_heart_rate(signals)
         feature_types.append(heart_rate_feature)
-
+    '''
     if 'distance' in conf.feature_type or 'amplitude' in conf.feature_type:
         print('心拍特征点定位中...')
         p_peak, q_peak, r_peak, s_peak, t_peak, q_begin, p_begin, t_begin, p_end, s_end, t_end = detect_points_in_all()
@@ -133,7 +132,7 @@ def get_all_feature(signals):
             amp_feature = cal_amp_feature(p_peak, q_peak, r_peak, s_peak, t_peak, q_begin, p_begin, t_begin, p_end,
                                           s_end, t_end)
             feature_types.append(amp_feature)
-
+    '''
     all_feature = np.concatenate(feature_types, axis=1)
     print('all_feature shape:', all_feature.shape)
     return all_feature

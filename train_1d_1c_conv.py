@@ -5,7 +5,7 @@
 @file: train_1d_1c_conv.py
 @description:
 """
-from common import conf
+from common.conf import current_config as conf
 from deep.base_nets import conv_1d_1c
 from keras import Input
 from deep.train_common import load_data, compile_model, train_model

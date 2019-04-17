@@ -5,31 +5,32 @@
 @file: base_net.py
 @description: defined simple net, resnet, resnet-ir
 """
-from keras.layers import Input,Conv2D,MaxPooling2D,Dropout,Flatten,Dense,GlobalAveragePooling2D
+from keras.layers import *
 import keras.layers as KL
 from keras import Model
-from common import  conf
+from common.conf import current_config as conf
+
 size = conf.conv_kernel_size
 
 
 def simple_net(nn_inputs):
-    x = Conv2D(32, (3, size), activation='relu',padding='same')(nn_inputs)
-    x = Conv2D(32, (3, size), activation='relu',padding='same')(x)
+    x = Conv2D(32, (3, size), activation='relu', padding='same')(nn_inputs)
+    x = Conv2D(32, (3, size), activation='relu', padding='same')(x)
     x = MaxPooling2D(pool_size=(2, 4))(x)
 
-    x = Conv2D(16, (3, size), activation='relu',padding='same')(x)
-    x = Conv2D(16, (3, size), activation='relu',padding='same')(x)
+    x = Conv2D(16, (3, size), activation='relu', padding='same')(x)
+    x = Conv2D(16, (3, size), activation='relu', padding='same')(x)
     x = MaxPooling2D(pool_size=(1, 2))(x)
 
-    x = Conv2D(32, (3, size), activation='relu',padding='same')(x)
-    x = Conv2D(32, (3, size), activation='relu',padding='same')(x)
+    x = Conv2D(32, (3, size), activation='relu', padding='same')(x)
+    x = Conv2D(32, (3, size), activation='relu', padding='same')(x)
     x = MaxPooling2D(pool_size=(1, 2))(x)
-    #x = GlobalAveragePooling2D()(x)
+    # x = GlobalAveragePooling2D()(x)
 
     x = Flatten()(x)
     x = Dense(64, activation='relu')(x)
     x = Dropout(conf.dropout_rate)(x)
-    x = Dense(conf.num_class, name='softmax_out',activation='softmax')(x)
+    x = Dense(conf.num_class, name='softmax_out', activation='softmax')(x)
     return x
 
 

@@ -5,13 +5,13 @@
 @file: train_tradition.py
 @description: python -W ignore train_tradition.py
 """
-import common.conf as conf
+from common.conf import current_config as conf
 from tradition.extract_feature import get_all_feature
 import common.utils as utils
 import tradition.tradition_model as tradition_model
 import os
 
-signals = utils.load_data()
+signals = utils.load_dataset()
 labels = utils.load_label()
 all_feature = get_all_feature(signals)
 

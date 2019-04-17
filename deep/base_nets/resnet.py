@@ -13,7 +13,8 @@ import keras.layers as KL
 # Requires TensorFlow 1.3+ and Keras 2.0.8+.
 from distutils.version import LooseVersion
 from keras import Model
-from common import conf
+from common.conf import current_config as conf
+
 assert LooseVersion(tf.__version__) >= LooseVersion("1.3")
 assert LooseVersion(keras.__version__) >= LooseVersion('2.0.8')
 
@@ -203,7 +204,7 @@ def resnet(input_image, architecture, stage5=False, train_bn=True):
     else:
         C5 = None
     x = KL.GlobalAveragePooling2D(name='ave_pool')(x)
-    x = KL.Dense(conf.num_class, name='softmax_out',activation='softmax')(x)
+    x = KL.Dense(conf.num_class, name='softmax_out', activation='softmax')(x)
     return x
 
 

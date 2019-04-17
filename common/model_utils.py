@@ -8,18 +8,11 @@
 import pandas as pd
 from sklearn import metrics
 from sklearn.metrics import classification_report, f1_score
-from common import conf
+from common.conf import current_config as conf
 import numpy as np
-import keras.backend as K
 
 
 def save_result(model, name, y_train, y_train_pred, y_vali, y_vali_pred):
-    '''
-    :param model: model object
-    :param name: str, txt file name
-    :param y_train,y_train_pred,y_vali,y_vali_pred: 1-D array
-    :return:
-    '''
     conf1 = pd.crosstab(y_train, y_train_pred)
     conf2 = pd.crosstab(y_vali, y_vali_pred)
     train_acc = metrics.accuracy_score(y_train, y_train_pred)
@@ -57,79 +50,3 @@ def cal_f1_metric(model, x, y_true):
     f1 = np.round(f1, 3)
     return f1
 
-
-def keras_f1_score(y_true, y_pred):
-    def recall(y_true, y_pred):
-        """Recall metric.
-
-        Only computes a batch-wise average of recall.
-
-        Computes the recall, a metric for multi-label classification of
-        how many relevant items are selected.
-        """
-        true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-        possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-        recall = true_positives / (possible_positives + K.epsilon())
-        return recall
-
-    def precision(y_true, y_pred):
-        """Precision metric.
-
-        Only computes a batch-wise average of precision.
-
-        Computes the precision, a metric for multi-label classification of
-        how many selected items are relevant.
-        """
-        true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-        predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-        precision = true_positives / (predicted_positives + K.epsilon())
-        return precision
-
-    precision = precision(y_true, y_pred)
-    recall = recall(y_true, y_pred)
-    f1 = 2 * ((precision * recall) / (precision + recall + K.epsilon()))
-    return f1
-
-
-'''
-def keras_f1_score(y_true, y_pred):
-    """
-    f1 score
-
-    :param y_true:
-    :param y_pred:
-    :return:
-    """
-    tp_3d = K.concatenate(
-        [
-            K.cast(y_true, 'bool'),
-            K.cast(K.round(y_pred), 'bool'),
-            K.cast(K.ones_like(y_pred), 'bool')
-        ], axis=1
-    )
-
-    fp_3d = K.concatenate(
-        [
-            K.cast(K.abs(y_true - K.ones_like(y_true)), 'bool'),
-            K.cast(K.round(y_pred), 'bool'),
-            K.cast(K.ones_like(y_pred), 'bool')
-        ], axis=1
-    )
-
-    fn_3d = K.concatenate(
-        [
-            K.cast(y_true, 'bool'),
-            K.cast(K.abs(K.round(y_pred) - K.ones_like(y_pred)), 'bool'),
-            K.cast(K.ones_like(y_pred), 'bool')
-        ], axis=1
-    )
-
-    tp = K.sum(K.cast(K.all(tp_3d, axis=1), 'int32'))
-    fp = K.sum(K.cast(K.all(fp_3d, axis=1), 'int32'))
-    fn = K.sum(K.cast(K.all(fn_3d, axis=1), 'int32'))
-
-    precision = tp / (tp + fp)
-    recall = tp / (tp + fn)
-    return 2 * ((precision * recall) / (precision + recall))
-
-'''

@@ -5,7 +5,7 @@
 @file: tradition_model.py
 @description:
 """
-import common.conf as conf
+from common.conf import current_config as conf
 from sklearn import svm
 import time
 from common.model_utils import evaluate
@@ -20,26 +20,24 @@ import os
 def do_svm(x_train, y_train, x_test, y_test, save_model, result_file):
     # kernel = ['Linear','poly','rbf']
     kernel = ['Linear', 'rbf']
-    clf = []
-    clf.append(svm.LinearSVC())
-    # clf.append(svm.SVC(kernel='poly'))
-    clf.append(svm.SVC(kernel='rbf'))
+    # svm.SVC(kernel='poly'
+    clf = [svm.LinearSVC(), svm.SVC(kernel='rbf')]
 
-    trainAccu = []
-    valiAccu = []
+    train_acc = []
+    vali_acc = []
     for i in range(len(clf)):
         start_time = time.time()
         clf[i].fit(x_train, y_train)
         y_train_pred = clf[i].predict(x_train)
         y_test_pred = clf[i].predict(x_test)
-        trainAccu.append(metrics.accuracy_score(y_train, y_train_pred))
-        valiAccu.append(metrics.accuracy_score(y_test, y_test_pred))
+        train_acc.append(metrics.accuracy_score(y_train, y_train_pred))
+        vali_acc.append(metrics.accuracy_score(y_test, y_test_pred))
         print('---' + kernel[i] + '_kernel---' + '\n' + "--- %s min ---" % ((time.time() - start_time) / 60))
 
     # save best model
-    m = max(valiAccu)
-    maxLoc = [i for i, j in enumerate(valiAccu) if j == m]
-    i = maxLoc[0]
+    m = max(vali_acc)
+    max_loc = [i for i, j in enumerate(vali_acc) if j == m]
+    i = max_loc[0]
     model = clf[i]
     if save_model:
         pickle.dump(model, open(os.path.join(conf.output_dir, "svm.pickle.dat"), "wb"))
